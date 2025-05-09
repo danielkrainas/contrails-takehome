@@ -20,7 +20,9 @@ async def hello_world(request: Request, tz: Optional[str] = Query(None)):
             current_time = datetime.now(tz_info).isoformat()
             message += f" It is {current_time} in timezone {tz}."
         except Exception as e:
-            return JSONResponse({"error": f"Invalid timezone '{tz}'."}, status_code=400)
+            return JSONResponse(
+                content={"error": f"Invalid timezone '{tz}'."}, status_code=400
+            )
 
     # handles compound values in the accept header
     if "application/json" in accept:
@@ -41,7 +43,7 @@ async def unravel(request: Request):
                 status_code=400,
             )
     except Exception:
-        return JSONResponse({"error": "Invalid JSON payload."}, status_code=400)
+        return JSONResponse(content={"error": "Invalid JSON payload."}, status_code=400)
 
     def flatten(obj: Any, depth: int = 0, max_depth: int = 10) -> List[Any]:
         if depth > max_depth:
