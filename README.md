@@ -84,6 +84,56 @@ http://localhost:8000/helloworld
 | `make test`      | Run tests                                 |
 | `make install`   | Install all project dependencies          |
 
+## ✦ API Examples
+
+### 📍 `GET /helloworld`
+
+#### Plain text response (default):
+
+```bash
+curl http://localhost:8000/helloworld
+```
+
+#### JSON response:
+
+```bash
+curl -H "Accept: application/json" http://localhost:8000/helloworld
+```
+
+#### With timezone parameter:
+
+```bash
+curl -H "Accept: application/json" "http://localhost:8000/helloworld?tz=Europe/London"
+```
+
+#### With invalid timezone:
+
+```bash
+curl -H "Accept: application/json" "http://localhost:8000/helloworld?tz=NotARealZone"
+```
+
+---
+
+### 📍 `POST /unravel`
+
+#### Example request:
+
+```bash
+curl -X POST http://localhost:8000/unravel \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key1": {"keyA": ["foo", 0, "bar"]},
+    "some other key": 2,
+    "finally": "end"
+  }'
+```
+
+#### Expected response:
+
+```json
+["key1", "keyA", "foo", 0, "bar", "some other key", 2, "finally", "end"]
+```
+
 ## ✦ License
 
 This project is released under the [CC0 Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/).
