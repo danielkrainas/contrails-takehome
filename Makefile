@@ -14,7 +14,7 @@ typecheck:
 
 # Run tests with Pytest
 test:
-	poetry run pytest
+	PYTHONPATH=. poetry run pytest
 
 # Install all dependencies (including dev)
 install:
