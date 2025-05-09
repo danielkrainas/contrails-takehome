@@ -1,3 +1,7 @@
+import asyncio
+import subprocess
+import sys
+import os
 from fastapi import APIRouter, Request, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 from typing import Optional, Any, List
@@ -8,7 +12,7 @@ router = APIRouter()
 
 
 # Responds with "Hello World!" in plain text or JSON.
-#   If a valid 'tz' query parameter is provided, includes the current time in that timezone.
+# If a valid 'tz' query parameter is provided, includes the current time in that timezone.
 @router.get("/helloworld")
 async def hello_world(request: Request, tz: Optional[str] = Query(None)):
     accept = request.headers.get("accept", "")
@@ -69,3 +73,29 @@ async def unravel(request: Request):
         return JSONResponse(content={"error": str(e)}, status_code=400)
 
     return JSONResponse(content=flattened)
+
+
+# POST /roll endpoint used by a GitHub webhook to trigger a rolling update.
+# It schedules a background task to pull the latest code and restart the server,
+# and responds immediately with 202 to avoid breaking the webhook request.
+@router.post("/roll")
+async def roll():
+    asyncio.create_task(perform_roll_restart())
+    return JSONResponse(
+        content={"message": "Rolling update triggered"}, status_code=202
+    )
+
+
+# Performs the rolling update logic:
+# - Waits briefly to ensure the webhook caller receives a response
+# - Runs `git pull` to fetch the latest code
+# - Exits the process to trigger a restart loop (if enabled)
+# Respects the CONTRAILS_RESTART_ON_UPDATE env var to allow dev-mode override.
+async def perform_roll_restart():
+    if os.getenv("CONTRAILS_RESTART_ON_UPDATE", "1") == "0":
+        print("Skipping restart: CONTRAILS_RESTART_ON_UPDATE is set to 0")
+        return
+
+    await asyncio.sleep(0.5)
+    subprocess.run(["git", "pull", "origin", "main"], check=True)
+    sys.exit(0)

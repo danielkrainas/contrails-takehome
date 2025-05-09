@@ -1,8 +1,16 @@
-.PHONY: run format typecheck test install
+.PHONY: run rundev format typecheck test install
 
-# Run the FastAPI server
 run:
-	poetry run uvicorn app.main:app --reload
+	@echo "Starting FastAPI server loop..."
+	@while true; do \
+		CONTRAILS_RESTART_ON_UPDATE=1 poetry run uvicorn app.main:app; \
+		echo "[server exited] Restarting in 1s..."; \
+		sleep 1; \
+	done
+
+# Run the FastAPI server in development mode (no autoreloading from /roll)
+rundev:
+	CONTRAILS_RESTART_ON_UPDATE=0 poetry run uvicorn app.main:app --reload
 
 # Format code using Black
 format:
