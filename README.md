@@ -60,29 +60,48 @@ Dev tools (optional, recommended):
 
 ## ✦ Running the Server
 
-To start the FastAPI development server on `localhost:8000`:
+You can start the FastAPI server in two modes:
+
+### Development mode (with live reload)
+
+Use this for active development:
+
+```bash
+make rundev
+```
+
+This runs the server with Uvicorn's `--reload` option, automatically restarting on code changes.
+
+---
+
+### Restartable mode (used with `/roll`)
+
+Use this to test the `/roll` webhook or simulate production-style restarts:
 
 ```bash
 make run
 ```
 
-This will launch the app with live reload via Uvicorn. You can then visit:
+This runs the server in a loop. When `/roll` is triggered, the app will pull the latest code and restart itself.
+
+---
+
+Once the server is running, you can visit:
 
 ```
 http://localhost:8000/helloworld
 ```
 
----
-
 ## ✦ Makefile Commands
 
-| Command          | Description                               |
-| ---------------- | ----------------------------------------- |
-| `make run`       | Start the FastAPI server with live reload |
-| `make format`    | Format code with Black                    |
-| `make typecheck` | Check static types with Mypy              |
-| `make test`      | Run tests                                 |
-| `make install`   | Install all project dependencies          |
+| Command          | Description                                                               |
+| ---------------- | ------------------------------------------------------------------------- |
+| `make run`       | Start the FastAPI server in a restartable loop (used with `/roll`)        |
+| `make rundev`    | Start the FastAPI server with live reload for development (auto-restarts) |
+| `make install`   | Install project dependencies using Poetry                                 |
+| `make test`      | Run the test suite with Pytest                                            |
+| `make format`    | Format code using Black                                                   |
+| `make typecheck` | Run static type checks using Mypy                                         |
 
 ## ✦ API Examples
 
