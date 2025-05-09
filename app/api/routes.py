@@ -11,10 +11,16 @@ from zoneinfo import ZoneInfo
 router = APIRouter()
 
 
-# Responds with "Hello World!" in plain text or JSON.
-# If a valid 'tz' query parameter is provided, includes the current time in that timezone.
 @router.get("/helloworld")
 async def hello_world(request: Request, tz: Optional[str] = Query(None)):
+    """
+    Return a 'Hello World!' message.
+
+    - Returns plain text or JSON depending on the Accept header.
+    - Accepts an optional `tz` query parameter (IANA timezone string).
+    - If provided and valid, includes current time in the specified timezone.
+    """
+
     accept = request.headers.get("accept", "")
     message = "Hello World!"
     if tz:
@@ -35,10 +41,16 @@ async def hello_world(request: Request, tz: Optional[str] = Query(None)):
         return PlainTextResponse(message)
 
 
-# Recursively traverses a nested JSON object and returns a flat list containing all keys and values.
-# Lists and nested dictionaries are fully unpacked in traversal order.
 @router.post("/unravel")
 async def unravel(request: Request):
+    """
+    Recursively flattens a nested JSON object.
+
+    - Accepts a JSON body (must be an object/dict).
+    - Returns a flat list of all keys and values, in traversal order.
+    - Enforces a maximum recursion depth of 10.
+    """
+
     try:
         payload = await request.json()
         if not isinstance(payload, dict):
@@ -75,23 +87,32 @@ async def unravel(request: Request):
     return JSONResponse(content=flattened)
 
 
-# POST /roll endpoint used by a GitHub webhook to trigger a rolling update.
-# It schedules a background task to pull the latest code and restart the server,
-# and responds immediately with 202 to avoid breaking the webhook request.
 @router.post("/roll")
 async def roll():
+    """
+    Triggers a rolling update via GitHub webhook.
+
+    - Responds with HTTP 202 immediately.
+    - In the background, pulls the latest code from the `main` branch.
+    - Restarts the server if `CONTRAILS_RESTART_ON_UPDATE` is not set to '0'.
+    """
+
     asyncio.create_task(perform_roll_restart())
     return JSONResponse(
         content={"message": "Rolling update triggered"}, status_code=202
     )
 
 
-# Performs the rolling update logic:
-# - Waits briefly to ensure the webhook caller receives a response
-# - Runs `git pull` to fetch the latest code
-# - Exits the process to trigger a restart loop (if enabled)
-# Respects the CONTRAILS_RESTART_ON_UPDATE env var to allow dev-mode override.
 async def perform_roll_restart():
+    """
+    Performs the rolling update logic:
+
+    - Waits briefly to ensure the webhook response is returned cleanly.
+    - Runs `git pull` to fetch the latest code from the main branch.
+    - Exits the process with code 0 to trigger a restart (when used with a process wrapper).
+    - Honors the CONTRAILS_RESTART_ON_UPDATE env var to disable restarts in dev mode.
+    """
+
     print("[roll] checking restart conditions...")
     if os.getenv("CONTRAILS_RESTART_ON_UPDATE", "1") == "0":
         print("[roll] Skipping restart: flag is set to 0")
