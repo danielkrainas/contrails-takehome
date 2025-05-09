@@ -82,15 +82,15 @@ Use this to test the `/roll` webhook or simulate production-style restarts:
 make run
 ```
 
-This runs the server in a loop. When `/roll` is triggered, the app will pull the latest code and restart itself.
+This runs the server in a loop. When `/roll` is triggered, the app will pull the latest code and restart itself. This behavior is controlled by the `CONTRAILS_RESTART_ON_UPDATE` environment variable. It's automatically set by the Makefile.
 
 ---
 
 Once the server is running, you can visit:
 
-```
-http://localhost:8000/helloworld
-```
+- `http://localhost:8000/helloworld` - basic endpoint
+- `http://localhost:8000/docs` - auto-generated Swagger docs
+- `http://localhost:8000/redoc` - alternative ReDoc interface
 
 ## ✦ Makefile Commands
 
@@ -152,6 +152,18 @@ curl -X POST http://localhost:8000/unravel \
 ```json
 ["key1", "keyA", "foo", 0, "bar", "some other key", 2, "finally", "end"]
 ```
+
+### 📍 `POST /roll`
+
+Triggers a rolling update of the server by pulling the latest code from `main` and restarting the app.
+
+#### Example:
+
+```bash
+curl -X POST http://localhost:8000/roll
+````
+
+**Note:** Only works when running with `make run`. No-op in `rundev` mode.
 
 ## ✦ License
 
