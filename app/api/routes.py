@@ -98,4 +98,8 @@ async def perform_roll_restart():
 
     await asyncio.sleep(0.5)
     subprocess.run(["git", "pull", "origin", "main"], check=True)
-    sys.exit(0)
+    try:
+        sys.exit(0)
+    except SystemExit:
+        # This is expected when the process exits
+        pass
