@@ -92,10 +92,12 @@ async def roll():
 # - Exits the process to trigger a restart loop (if enabled)
 # Respects the CONTRAILS_RESTART_ON_UPDATE env var to allow dev-mode override.
 async def perform_roll_restart():
+    print("[roll] checking restart conditions...")
     if os.getenv("CONTRAILS_RESTART_ON_UPDATE", "1") == "0":
-        print("Skipping restart: CONTRAILS_RESTART_ON_UPDATE is set to 0")
+        print("[roll] Skipping restart: flag is set to 0")
         return
 
     await asyncio.sleep(0.5)
+    print("[roll] Pulling latest and restarting")
     subprocess.run(["git", "pull", "origin", "main"], check=True)
     sys.exit(0)
