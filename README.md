@@ -53,7 +53,7 @@ Dev tools (optional, recommended):
 4. **Activate the virtual environment (optional):**
 
    ```bash
-   poetry shell
+   poetry env activate 
    ```
 
 ---
