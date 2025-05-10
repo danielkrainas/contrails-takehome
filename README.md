@@ -155,15 +155,29 @@ curl -X POST http://localhost:8000/unravel \
 
 ### 📍 `POST /roll`
 
-Triggers a rolling update of the server by pulling the latest code from `main` and restarting the app.
+Triggers a rolling update of the server - pulls the latest code from the `main` branch and restarts the app **only** when triggered by a **GitHub push event containing a merge commit to `main`**.
 
-#### Example:
+This endpoint is designed to be used via a GitHub webhook and will ignore:
+
+- Non-push events
+- Pushes to branches other than `main`
+- Regular commits (i.e., non-merge commits)
+
+#### Example (simulating a merge push):
 
 ```bash
-curl -X POST http://localhost:8000/roll
-````
+curl -X POST http://localhost:8000/roll \
+  -H "X-GitHub-Event: push" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ref": "refs/heads/main",
+    "head_commit": {
+      "parents": ["abc123", "def456"]
+    }
+  }'
+```
 
-**Note:** Only works when running with `make run`. No-op in `rundev` mode.
+**Note:** This only works when running with `make run`. No-op in `rundev` mode.
 
 ## ✦ License
 

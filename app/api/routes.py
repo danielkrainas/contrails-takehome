@@ -88,14 +88,47 @@ async def unravel(request: Request):
 
 
 @router.post("/roll")
-async def roll():
+async def roll(request: Request):
     """
     Triggers a rolling update via GitHub webhook.
 
+    - Only triggers on merge commits to main branch.
     - Responds with HTTP 202 immediately.
     - In the background, pulls the latest code from the `main` branch.
     - Restarts the server if `CONTRAILS_RESTART_ON_UPDATE` is not set to '0'.
     """
+
+    event_type = request.headers.get("X-GitHub-Event", "")
+    if event_type != "push":
+        print("[roll] Skipping: not a push event")
+        return JSONResponse(
+            content={"message": "Ignored: Not a push event"},
+            status_code=200,
+        )
+
+    payload = await request.json()
+    if not isinstance(payload, dict):
+        print("[roll] Skipping: payload is not a dictionary")
+        return JSONResponse(
+            content={"message": "Ignored: Payload is not a dictionary"},
+            status_code=200,
+        )
+
+    if "ref" not in payload or payload.get("ref") != "refs/heads/main":
+        print("[roll] Skipping: not a push to main branch")
+        return JSONResponse(
+            content={"message": "Ignored: Not a push to main branch"},
+            status_code=200,
+        )
+
+    head_commit = payload.get("head_commit", {})
+    parents = head_commit.get("parents", [])
+    if len(parents) <= 1:
+        print("[roll] Skipping: not a merge commit")
+        return JSONResponse(
+            content={"message": "Ignored: Not a merge commit"},
+            status_code=200,
+        )
 
     asyncio.create_task(perform_roll_restart())
     return JSONResponse(
